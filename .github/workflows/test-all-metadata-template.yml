@@ -1,0 +1,423 @@
+# Reusable 85-batch metadata sweep for callers that provide a GraalVM archive artifact.
+# §AR-test-harness.3; §AR-test-harness.7.
+name: "Test all metadata with a supplied GraalVM"
+
+on:
+  workflow_call:
+    inputs:
+      graalvm-artifact-name:
+        description: "Workflow artifact containing the GraalVM archive"
+        required: true
+        type: string
+      graalvm-archive-name:
+        description: "Archive file name inside the GraalVM artifact"
+        required: true
+        type: string
+      graalvm-dir:
+        description: "Top-level GraalVM directory in the archive"
+        required: true
+        type: string
+      graal-branch:
+        description: "GraalVM source branch"
+        required: true
+        type: string
+      graal-commit:
+        description: "Exact GraalVM source commit"
+        required: true
+        type: string
+      result-prefix:
+        description: "Prefix for result artifacts"
+        required: false
+        default: "custom-graalvm"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  prepare:
+    name: "Prepare metadata batches"
+    runs-on: "ubuntu-22.04"
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      batch-count: ${{ steps.matrix.outputs.batch-count }}
+    steps:
+      - name: "Create coordinate matrix"
+        id: matrix
+        run: |
+          set -euo pipefail
+
+          COORDINATES="$(jq -nc '[range(1; 86) | "\(.)/85"]')"
+
+          MATRIX="$(jq -nc --argjson coordinates "$COORDINATES" \
+            '{include: [$coordinates[] | {coordinates: .}]}')"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "batch-count=$(jq 'length' <<< "$COORDINATES")" >> "$GITHUB_OUTPUT"
+          echo "$MATRIX" | jq .
+
+  test-metadata:
+    name: "Test ${{ matrix.coordinates }} with ${{ inputs.graal-branch }}"
+    runs-on: "ubuntu-22.04"
+    timeout-minutes: 480
+    needs: prepare
+    env:
+      GVM_TCK_NATIVE_IMAGE_MODE: "current-defaults"
+      LOG_LINES: "300"
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: "Checkout reachability metadata"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: "Configure Gradle dependency-resolution backoff"
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.gradle"
+          cat >> "$HOME/.gradle/gradle.properties" <<'PROPERTIES'
+          systemProp.org.gradle.internal.network.retry.max.attempts=5
+          systemProp.org.gradle.internal.network.retry.initial.backOff=2000
+          systemProp.org.gradle.internal.repository.max.tentatives=3
+          systemProp.org.gradle.internal.repository.initial.backoff=3000
+          PROPERTIES
+
+      - name: "Restore Gradle modules"
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-${{ inputs.result-prefix }}-gradle-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', 'tests/tck-build-logic/**/*.gradle', 'tests/tck-build-logic/build.gradle') }}
+
+      - name: "Setup latest native-build-tools snapshot"
+        uses: ./.github/actions/setup-native-build-tools
+
+      - name: "Download supplied GraalVM"
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.graalvm-artifact-name }}
+          path: ${{ runner.temp }}/graalvm-download
+
+      - name: "Use supplied GraalVM"
+        env:
+          GRAALVM_ARCHIVE_NAME: ${{ inputs.graalvm-archive-name }}
+          GRAALVM_DIR: ${{ inputs.graalvm-dir }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/graalvm"
+          tar -C "$RUNNER_TEMP/graalvm" \
+            -xzf "$RUNNER_TEMP/graalvm-download/$GRAALVM_ARCHIVE_NAME"
+          GRAALVM_HOME="$RUNNER_TEMP/graalvm/$GRAALVM_DIR"
+          echo "JAVA_HOME=$GRAALVM_HOME" >> "$GITHUB_ENV"
+          echo "$GRAALVM_HOME/bin" >> "$GITHUB_PATH"
+          "$GRAALVM_HOME/bin/native-image" --version
+
+      - name: "Run full metadata tests"
+        id: run-tests
+        env:
+          GRAAL_COMMIT: ${{ inputs.graal-commit }}
+          GRAAL_BRANCH: ${{ inputs.graal-branch }}
+          MATRIX_COORDINATES: ${{ matrix.coordinates }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p test-all-results failure-logs
+          : > test-all-results/failures.ndjson
+          : > test-all-results/coordinates-to-test.txt
+
+          record_failure() {
+            local coordinates="$1"
+            local failure_type="$2"
+            local failed_command="$3"
+            local log_file="$4"
+            local name="${coordinates%:*}"
+            local failed_version="${coordinates##*:}"
+
+            tail -n "$LOG_LINES" "$log_file" > test-all-results/log-tail.txt
+            jq -c -n \
+              --arg name "$name" \
+              --arg os "ubuntu-22.04" \
+              --arg graalBranch "$GRAAL_BRANCH" \
+              --arg graalCommit "$GRAAL_COMMIT" \
+              --arg metadataCommit "${{ github.sha }}" \
+              --arg nativeImageMode "current-defaults" \
+              --arg runnerLogUrl "$RUNNER_LOG_URL" \
+              --arg failureType "$failure_type" \
+              --arg failedVersion "$failed_version" \
+              --arg failedCommand "$failed_command" \
+              --arg logLines "$LOG_LINES" \
+              --rawfile logTail test-all-results/log-tail.txt \
+              '{
+                name: $name,
+                os: $os,
+                graalBranch: $graalBranch,
+                graalCommit: $graalCommit,
+                metadataCommit: $metadataCommit,
+                nativeImageMode: $nativeImageMode,
+                runnerLogUrl: $runnerLogUrl,
+                failure: {
+                  failureType: $failureType,
+                  failedVersion: $failedVersion,
+                  failedCommand: $failedCommand,
+                  logLines: $logLines,
+                  logTail: $logTail
+                }
+              }' >> test-all-results/failures.ndjson
+          }
+
+          RUNNER_LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          MATCHING_MATRIX_OUTPUT_FILE="$(mktemp)"
+          GITHUB_OUTPUT="$MATCHING_MATRIX_OUTPUT_FILE" \
+            ./gradlew generateMatrixMatchingCoordinates -Pcoordinates="$MATRIX_COORDINATES"
+          cp "$MATCHING_MATRIX_OUTPUT_FILE" test-all-results/matching-matrix.txt
+          sed -n 's/^matrix=//p' test-all-results/matching-matrix.txt \
+            | jq -r '.coordinates[]' \
+            | sort > test-all-results/batch-coordinates.txt
+          if [[ ! -s test-all-results/batch-coordinates.txt ]]; then
+            echo "No coordinates were resolved for $MATRIX_COORDINATES"
+            exit 1
+          fi
+
+          set +e
+          ./gradlew pullAllowedDockerImages -Pcoordinates="$MATRIX_COORDINATES" \
+            2>&1 | tee test-all-results/pull-batch.log
+          PULL_RESULT="${PIPESTATUS[0]}"
+          set -e
+
+          if [[ "$PULL_RESULT" -eq 0 ]]; then
+            cp test-all-results/batch-coordinates.txt test-all-results/coordinates-to-test.txt
+          else
+            echo "Batch Docker image pull failed. Pulling images per coordinate to isolate failures."
+            while IFS= read -r coordinates; do
+              safe_coordinates="$(printf '%s' "$coordinates" | tr '/:' '--')"
+              pull_log="failure-logs/pull-$safe_coordinates.log"
+              pull_command="./gradlew pullAllowedDockerImages -Pcoordinates=\"$coordinates\""
+
+              set +e
+              ./gradlew pullAllowedDockerImages -Pcoordinates="$coordinates" 2>&1 | tee "$pull_log"
+              coordinate_pull_result="${PIPESTATUS[0]}"
+              set -e
+
+              if [[ "$coordinate_pull_result" -eq 0 ]]; then
+                printf '%s\n' "$coordinates" >> test-all-results/coordinates-to-test.txt
+              else
+                record_failure "$coordinates" "docker image pull" "$pull_command" "$pull_log"
+              fi
+            done < test-all-results/batch-coordinates.txt
+          fi
+
+          if [[ ! -s test-all-results/coordinates-to-test.txt ]]; then
+            echo "No coordinates remain testable after Docker image pull failures."
+          else
+            bash ./.github/workflows/scripts/disable-docker.sh
+
+            if [[ "$PULL_RESULT" -eq 0 ]]; then
+              set +e
+              ./gradlew test -Pcoordinates="$MATRIX_COORDINATES" \
+                2>&1 | tee test-all-results/batch-test.log
+              BATCH_TEST_RESULT="${PIPESTATUS[0]}"
+              set -e
+            else
+              BATCH_TEST_RESULT=1
+            fi
+
+            if [[ "$BATCH_TEST_RESULT" -ne 0 ]]; then
+              echo "Batch tests failed. Running every coordinate to collect concrete failures."
+              while IFS= read -r coordinates; do
+                safe_coordinates="$(printf '%s' "$coordinates" | tr '/:' '--')"
+                version="${coordinates##*:}"
+                versions_json="$(jq -nc --arg version "$version" '[$version]')"
+                test_log="failure-logs/test-$safe_coordinates.log"
+
+                set +e
+                bash ./.github/workflows/scripts/run-consecutive-tests.sh \
+                  "$coordinates" "$versions_json" 2>&1 | tee "$test_log"
+                test_result="${PIPESTATUS[0]}"
+                set -e
+
+                failed_line="$(grep -a '^FAILED' "$test_log" | head -n 1 || true)"
+                if [[ -n "$failed_line" ]]; then
+                  failure_type="$(printf '%s\n' "$failed_line" | awk -F'[][]' '{print $2}')"
+                  failed_version="$(printf '%s\n' "$failed_line" | awk -F'[][]' '{print $4}')"
+                  failed_command="$(printf '%s\n' "$failed_line" | awk -F'[][]' '{print $6}')"
+                  record_failure \
+                    "${coordinates%:*}:$failed_version" "$failure_type" "$failed_command" "$test_log"
+                elif [[ "$test_result" -ne 0 ]]; then
+                  record_failure "$coordinates" "test harness" \
+                    "run-consecutive-tests.sh $coordinates $versions_json" "$test_log"
+                fi
+              done < test-all-results/coordinates-to-test.txt
+            fi
+          fi
+
+          RESOLVED_COORDINATES="$(jq -Rsc \
+            'split("\n") | map(select(length > 0))' test-all-results/batch-coordinates.txt)"
+          jq -s \
+            --arg graalBranch "$GRAAL_BRANCH" \
+            --arg graalCommit "$GRAAL_COMMIT" \
+            --arg metadataCommit "${{ github.sha }}" \
+            --arg nativeImageMode "current-defaults" \
+            --arg coordinates "$MATRIX_COORDINATES" \
+            --argjson resolvedCoordinates "$RESOLVED_COORDINATES" \
+            '{
+              graalBranch: $graalBranch,
+              graalCommit: $graalCommit,
+              metadataCommit: $metadataCommit,
+              nativeImageMode: $nativeImageMode,
+              coordinates: $coordinates,
+              resolvedCoordinates: $resolvedCoordinates,
+              failures: .
+            }' test-all-results/failures.ndjson > result.json
+
+          if jq -e '.failures | length > 0' result.json > /dev/null; then
+            echo "has_failures=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_failures=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Compute result artifact names"
+        id: artifact-name
+        env:
+          MATRIX_COORDINATES: ${{ matrix.coordinates }}
+          RESULT_PREFIX: ${{ inputs.result-prefix }}
+        run: |
+          SAFE_COORDINATES="$(printf '%s' "$MATRIX_COORDINATES" | tr '/:' '--')"
+          echo "result_artifact=$RESULT_PREFIX-result-$SAFE_COORDINATES" >> "$GITHUB_OUTPUT"
+          echo "failure_artifact=$RESULT_PREFIX-failure-logs-$SAFE_COORDINATES" >> "$GITHUB_OUTPUT"
+          echo "result_file=result-$SAFE_COORDINATES.json" >> "$GITHUB_OUTPUT"
+
+      - name: "Rename result file for aggregate download"
+        run: mv result.json "${{ steps.artifact-name.outputs.result_file }}"
+
+      - name: "Upload batch result"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.artifact-name.outputs.result_artifact }}
+          path: ${{ steps.artifact-name.outputs.result_file }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: "Upload batch failure logs"
+        if: steps.run-tests.outputs.has_failures == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.artifact-name.outputs.failure_artifact }}
+          path: |
+            failure-logs
+            test-all-results
+            ${{ steps.artifact-name.outputs.result_file }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: "Fail batch when metadata tests failed"
+        if: steps.run-tests.outputs.has_failures == 'true'
+        run: exit 1
+
+  process-results:
+    name: "Aggregate metadata test results"
+    runs-on: "ubuntu-22.04"
+    permissions:
+      actions: read
+      contents: read
+    needs: [prepare, test-metadata]
+    if: always() && needs.prepare.result == 'success'
+    outputs:
+      has-failures: ${{ steps.aggregate.outputs.has-failures }}
+    steps:
+      - name: "Download batch results"
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: metadata-test-results
+          pattern: ${{ inputs.result-prefix }}-result-*
+          merge-multiple: true
+
+      - name: "Aggregate results"
+        id: aggregate
+        env:
+          EXPECTED_BATCHES: ${{ needs.prepare.outputs.batch-count }}
+          GRAAL_COMMIT: ${{ inputs.graal-commit }}
+          GRAAL_BRANCH: ${{ inputs.graal-branch }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t RESULT_FILES < <(find metadata-test-results -type f -name 'result-*.json' | sort)
+          if [[ "${#RESULT_FILES[@]}" -eq 0 ]]; then
+            echo "No result artifacts were found under metadata-test-results"
+            exit 1
+          fi
+
+          jq -s \
+            --arg graalBranch "$GRAAL_BRANCH" \
+            --arg graalCommit "$GRAAL_COMMIT" \
+            --arg metadataCommit "${{ github.sha }}" \
+            --arg nativeImageMode "current-defaults" \
+            --argjson expectedBatches "$EXPECTED_BATCHES" \
+            '{
+              graalBranch: $graalBranch,
+              graalCommit: $graalCommit,
+              metadataCommit: $metadataCommit,
+              nativeImageMode: $nativeImageMode,
+              expectedBatches: $expectedBatches,
+              batches: length,
+              complete: (length == $expectedBatches),
+              resolvedCoordinates: ([.[].resolvedCoordinates[]?] | unique | sort),
+              failures: ([.[].failures[]?] | sort_by(.name, .failure.failedVersion))
+            }' "${RESULT_FILES[@]}" > aggregate-results.json
+
+          FAILURE_COUNT="$(jq '.failures | length' aggregate-results.json)"
+          EXPECTED_BATCH_COUNT="$(jq '.expectedBatches' aggregate-results.json)"
+          BATCH_COUNT="$(jq '.batches' aggregate-results.json)"
+          COORDINATE_COUNT="$(jq '.resolvedCoordinates | length' aggregate-results.json)"
+          {
+            echo "### GraalVM metadata sweep"
+            echo
+            echo "- Graal branch: \`$GRAAL_BRANCH\`"
+            echo "- Graal commit: \`$GRAAL_COMMIT\`"
+            echo "- Metadata commit: \`${{ github.sha }}\`"
+            echo "- Result batches: $BATCH_COUNT/$EXPECTED_BATCH_COUNT"
+            echo "- Resolved coordinates: $COORDINATE_COUNT"
+            echo "- Failures: $FAILURE_COUNT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$FAILURE_COUNT" -gt 0 ]]; then
+            jq -r '.failures[] | "- \(.name):\(.failure.failedVersion) [\(.failure.failureType)]"' \
+              aggregate-results.json >> "$GITHUB_STEP_SUMMARY"
+            echo "has-failures=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-failures=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Upload aggregate result"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ inputs.result-prefix }}-aggregate-results
+          path: aggregate-results.json
+          retention-days: 30
+          if-no-files-found: error
+
+  all-metadata-passed:
+    name: "All supplied-GraalVM metadata tests passed"
+    runs-on: "ubuntu-22.04"
+    timeout-minutes: 1
+    needs: [test-metadata, process-results]
+    if: always()
+    steps:
+      - name: "All tests passed"
+        if: >-
+          needs.test-metadata.result == 'success' &&
+          needs.process-results.result == 'success' &&
+          needs.process-results.outputs.has-failures != 'true'
+        run: exit 0
+
+      - name: "Some tests failed"
+        if: >-
+          needs.test-metadata.result != 'success' ||
+          needs.process-results.result != 'success' ||
+          needs.process-results.outputs.has-failures == 'true'
+        run: exit 1

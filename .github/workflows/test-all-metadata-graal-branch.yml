@@ -1,0 +1,146 @@
+# Build a selected oracle/graal branch, then delegate the metadata sweep to the reusable template.
+# §AR-test-harness.3.
+name: "Test all metadata against a GraalVM branch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      graal-branch:
+        description: "Branch from oracle/graal"
+        required: true
+        default: "master"
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: "workflow = ${{ github.workflow }}, ref = ${{ github.ref }}, graal = ${{ inputs.graal-branch }}"
+  cancel-in-progress: true
+
+jobs:
+  build-graalvm:
+    name: "Build GraalVM from oracle/graal@${{ inputs.graal-branch }}"
+    runs-on: "ubuntu-22.04"
+    timeout-minutes: 180
+    outputs:
+      graalvm-dir: ${{ steps.package.outputs.graalvm-dir }}
+      graal-commit: ${{ steps.graal-checkout.outputs.commit }}
+    steps:
+      - name: "Checkout reachability metadata"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: "Set up the JDK that warms the Gradle cache"
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: "graalvm"
+          java-version: "25"
+
+      - name: "Cache Gradle modules"
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-graal-branch-gradle-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', 'tests/tck-build-logic/**/*.gradle', 'tests/tck-build-logic/build.gradle') }}
+
+      - name: "Warm the Gradle dependency cache"
+        run: ./gradlew help --quiet
+
+      - name: "Checkout oracle/graal"
+        id: graal-checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: "oracle/graal"
+          ref: refs/heads/${{ inputs.graal-branch }}
+          path: "graal"
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Read GraalVM build configuration"
+        run: |
+          set -euo pipefail
+          echo "LABSJDK_HOME=$RUNNER_TEMP/labsjdk" >> "$GITHUB_ENV"
+          echo "MX_ALT_OUTPUT_ROOT=$RUNNER_TEMP/mxbuild" >> "$GITHUB_ENV"
+          echo "MX_PATH=$GITHUB_WORKSPACE/.graal-mx" >> "$GITHUB_ENV"
+          echo "MX_VERSION=$(jq -r '.mx_version' graal/common.json)" >> "$GITHUB_ENV"
+
+      - name: "Checkout the Graal branch's mx version"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: "graalvm/mx"
+          ref: ${{ env.MX_VERSION }}
+          path: ".graal-mx"
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Set up Python for mx"
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.8"
+
+      - name: "Fetch the Graal branch's LabsJDK"
+        working-directory: "graal"
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/jdk-download"
+          "$MX_PATH/mx" --java-home= fetch-jdk \
+            --jdk-id labsjdk-ce-latest \
+            --to "$RUNNER_TEMP/jdk-download" \
+            --alias "$LABSJDK_HOME"
+
+      - name: "Build GraalVM"
+        working-directory: "graal/vm"
+        run: |
+          set -euo pipefail
+          MX_ARGS=(
+            --java-home "$LABSJDK_HOME"
+            --dy /substratevm
+            --native-images=native-image,native-image-configure,lib:native-image-agent
+            "--components=Native Image,Native Image Configure Tool"
+          )
+          "$MX_PATH/mx" "${MX_ARGS[@]}" build
+          "$MX_PATH/mx" "${MX_ARGS[@]}" graalvm-home > "$RUNNER_TEMP/graalvm-home"
+
+      - name: "Package GraalVM for the test batches"
+        id: package
+        env:
+          GRAAL_COMMIT: ${{ steps.graal-checkout.outputs.commit }}
+        run: |
+          set -euo pipefail
+          GRAALVM_HOME="$(cat "$RUNNER_TEMP/graalvm-home")"
+          GRAALVM_DIR="$(basename "$GRAALVM_HOME")"
+
+          "$GRAALVM_HOME/bin/java" --version
+          "$GRAALVM_HOME/bin/native-image" --version
+          tar -C "$(dirname "$GRAALVM_HOME")" -czf graalvm-source-build.tar.gz "$GRAALVM_DIR"
+
+          echo "graalvm-dir=$GRAALVM_DIR" >> "$GITHUB_OUTPUT"
+          {
+            echo "### GraalVM source build"
+            echo
+            echo "- Branch: \`${{ inputs.graal-branch }}\`"
+            echo "- Commit: \`$GRAAL_COMMIT\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Upload GraalVM source build"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: "graalvm-source-build"
+          path: graalvm-source-build.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
+  test-all-metadata:
+    name: "Test all metadata with the source build"
+    needs: build-graalvm
+    uses: ./.github/workflows/test-all-metadata-template.yml
+    with:
+      graalvm-artifact-name: "graalvm-source-build"
+      graalvm-archive-name: "graalvm-source-build.tar.gz"
+      graalvm-dir: ${{ needs.build-graalvm.outputs.graalvm-dir }}
+      graal-branch: ${{ inputs.graal-branch }}
+      graal-commit: ${{ needs.build-graalvm.outputs.graal-commit }}
+      result-prefix: "graal-branch"
