@@ -1,0 +1,67 @@
+{
+  "library-new-request:2026-11-11": {
+    "timestamp": "2026-11-11T06:10:55+00:00",
+    "library": "com.caucho:hessian:4.0.63",
+    "starting_commit": "40041a77e9c82cbe631743b8ca768b663a4f542b",
+    "ending_commit": "bfb2a78482690024e49e02acf489762661d06a30",
+    "strategy_name": "forge-metadata:library-new-request",
+    "agent": "pi",
+    "model": "openai-codex/gpt-6.1-sol",
+    "status": "success",
+    "stats": {
+      "version": "4.0.63",
+      "dynamicAccess": {
+        "breakdown": {
+          "reflection": {
+            "coverageRatio": 0.928058,
+            "coveredCalls": 129,
+            "totalCalls": 139
+          },
+          "resources": {
+            "coverageRatio": 1.0,
+            "coveredCalls": 1,
+            "totalCalls": 1
+          }
+        },
+        "coverageRatio": 0.928571,
+        "coveredCalls": 130,
+        "totalCalls": 140
+      },
+      "libraryCoverage": {
+        "instruction": {
+          "covered": 14915,
+          "missed": 35638,
+          "ratio": 0.295037,
+          "total": 50553
+        },
+        "line": {
+          "covered": 3862,
+          "missed": 8416,
+          "ratio": 0.314546,
+          "total": 12278
+        },
+        "method": {
+          "covered": 661,
+          "missed": 1322,
+          "ratio": 0.333333,
+          "total": 1983
+        }
+      }
+    },
+    "metrics": {
+      "input_tokens_used": 222842,
+      "cached_input_tokens_used": 1422466,
+      "output_tokens_used": 7682,
+      "iterations": 4,
+      "cost_usd": 5.0279,
+      "generated_loc": 2434,
+      "tested_library_loc": 3862,
+      "metadata_entries": 147,
+      "test_only_metadata_entries": 257,
+      "code_coverage_percent": 31.45
+    },
+    "artifacts": {
+      "metadata_file": "metadata/com.caucho/hessian/4.0.63/reachability-metadata.json"
+    }
+  }
+}

@@ -3,12 +3,12 @@
 #   prepare -- 0 --> setup --> setup-check; 22 (not-for-native-image) --> publish
 #   setup-check -- 0 --> jvm; 20 (new library) --> analyze; 21 (skip recorded) --> publish
 #   jvm -- 0 --> native-repair -- 0 --> analyze; each 10 --> fix
-#   analyze -- 10 --> cover --> measure; 20 (nothing to explore, deferred) --> native
+#   analyze -- 10 --> cover --> measure; 11 (listing fails) --> fix; 20 (skip, defer) --> native
 #   measure -- 10 --> cover; 11 (JVM tests fail) --> fix; 0 (goal), 20 (budget) --> native
 #   native -- 0 --> finalize; 10 (at most native_fixes times) --> fix
 #   finalize -- 0 --> audit; 10 (at most finalize_fixes times) --> fix
 #   audit -- 10 (first visit) --> fix; 0 --> publish
-#   fix --> fix-route -- 30-35 --> back to the sender; 40 --> human-intervention
+#   fix --> fix-route -- 30-36 --> back to the sender; 40 --> human-intervention
 #   every sender -- 12 (failing after its last fix; analyze: first report) --> human-intervention
 #   publish -- 0 --> completed; 20 (nothing changed) --> nothing-to-publish
 #   every program -- 2 (bad input), 3 (infrastructure), or a crash --> failed
@@ -115,10 +115,14 @@ states:
         description: The failing test task the fix agent receives.
 
   analyze:
-    description: List the dynamic-access call sites once, correlate JaCoCo, pick the explore mode, write the first cover prompt.
+    description: List the dynamic-access call sites, or request a fix when the listing build fails; correlate JaCoCo, pick the explore mode, write the first cover prompt.
     program: python3 "{{repo_checkout}}/forge/.agent-grounds/rhei/programs/forge_run.py" analyze
     program_timeout: 180m
     outputs:
+      - name: fix-request
+        kind: handoff
+        path: runtime/forge/fix-request.md
+        description: The failing listing build the fix agent receives.
       - name: cover-prompt
         kind: handoff
         path: runtime/forge/cover-prompt.md
@@ -299,10 +303,13 @@ states:
       - Never skip or tolerate a Native Image failure (§root/FS-test-contract.4.1,
         §root/FS-test-contract.4.2); the only exception is open-ended dynamic
         class loading (§root/FS-test-contract.4.3).
-      - Reshape or delete a test that needs runtime class definition or
-        relinks a call site at run time (`MutableCallSite.setTarget`); cover a
-        dynamic language such as Groovy through its statically compiled path
-        (§root/FS-test-contract.4.5).
+      - Reshape or delete a test that targets a behavior Native Image cannot
+        support: runtime bytecode generation or class definition and loading,
+        agents, instrumentation, native-image substitutions, URL, plugin or
+        OSGi class loader paths, inline, static, construction or concrete-class
+        mocking, or relinking a call site at run time
+        (`MutableCallSite.setTarget`). Cover a dynamic language such as Groovy
+        through its statically compiled path (§root/FS-test-contract.4.5).
       - Drop a scenario that needs JDK behavior Native Image does not implement,
         as its sources or a GraalVM issue show, and keep the rest of the test;
         link that issue at the spot (§root/FS-native-image-gaps).
@@ -464,9 +471,14 @@ transitions:
     description: Nothing to explore, or exploration is deferred.
 
   - from: analyze
+    to: fix
+    exit_code: 11
+    description: The listing build fails; one fix request follows.
+
+  - from: analyze
     to: human-intervention
     exit_code: 12
-    description: The first coverage report fails before any cover pass; no fix can follow it.
+    description: The listing build still fails after its fix, or the first coverage report fails before any cover pass.
 
   - from: analyze
     to: failed
@@ -595,6 +607,11 @@ transitions:
     to: native-repair
     exit_code: 35
     description: Back to native-repair, which reruns the test task.
+
+  - from: fix-route
+    to: analyze
+    exit_code: 36
+    description: Back to analyze, which lists the call sites again.
 
   - from: fix-route
     to: human-intervention
