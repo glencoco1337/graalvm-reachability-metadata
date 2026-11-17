@@ -11,7 +11,8 @@
     ],
     "allowed-packages" : [
       "com.azure.core"
-    ]
+    ],
+    "override": true
   },
   {
     "latest" : true,
@@ -26,6 +27,7 @@
     ],
     "allowed-packages" : [
       "com.azure.core"
-    ]
+    ],
+    "override": true
   }
 ]

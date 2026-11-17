@@ -1,107 +1,5 @@
 [
   {
-    "latest" : true,
-    "auto-update" : true,
-    "metadata-version" : "10.1.8",
-    "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
-    "repository-url" : "https://github.com/apache/tomcat",
-    "test-code-url" : "https://github.com/apache/tomcat/tree/$version$/test/org/apache/tomcat/websocket",
-    "documentation-url" : "https://github.com/apache/tomcat/blob/$version$/webapps/docs/web-socket-howto.xml",
-    "description" : "Tomcat Embed WebSocket provides Apache Tomcat's embeddable implementation of the Jakarta WebSocket API for Tomcat 10.1 applications. It enables WebSocket client and server endpoints, message handling, session management, and Tomcat-specific WebSocket configuration when running Tomcat embedded in a JVM application.",
-    "tested-versions" : [
-      "10.1.8",
-      "10.1.9",
-      "10.1.10",
-      "10.1.11",
-      "10.1.12",
-      "10.1.13",
-      "10.1.14",
-      "10.1.15",
-      "10.1.16",
-      "10.1.17",
-      "10.1.18",
-      "10.1.19",
-      "10.1.20",
-      "10.1.23",
-      "10.1.24",
-      "10.1.25",
-      "10.1.26",
-      "10.1.28",
-      "10.1.29",
-      "10.1.30",
-      "10.1.31",
-      "10.1.33",
-      "10.1.34",
-      "10.1.35",
-      "10.1.36",
-      "10.1.39",
-      "10.1.40",
-      "10.1.41",
-      "10.1.42",
-      "10.1.43",
-      "10.1.44"
-    ],
-    "allowed-packages" : [
-      "javax.websocket",
-      "org.apache.tomcat.websocket",
-      "jakarta.websocket"
-    ]
-  },
-  {
-    "metadata-version" : "10.1.0",
-    "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
-    "repository-url" : "https://github.com/apache/tomcat",
-    "test-code-url" : "https://github.com/apache/tomcat/tree/$version$/test/org/apache/tomcat/websocket",
-    "documentation-url" : "https://github.com/apache/tomcat/blob/$version$/webapps/docs/web-socket-howto.xml",
-    "description" : "Tomcat Embed WebSocket provides Apache Tomcat's embeddable implementation of the Jakarta WebSocket API for Tomcat 10.1 applications. It enables WebSocket client and server endpoints, message handling, session management, and Tomcat-specific WebSocket configuration when running Tomcat embedded in a JVM application.",
-    "tested-versions" : [
-      "10.1.0",
-      "10.1.1",
-      "10.1.2",
-      "10.1.4",
-      "10.1.5",
-      "10.1.6",
-      "10.1.7"
-    ],
-    "allowed-packages" : [
-      "javax.websocket",
-      "org.apache.tomcat.websocket",
-      "jakarta.websocket"
-    ]
-  },
-  {
-    "metadata-version" : "10.0.6",
-    "tested-versions" : [
-      "10.0.6"
-    ],
-    "allowed-packages" : [
-      "javax.websocket",
-      "org.apache.tomcat.websocket",
-      "jakarta.websocket"
-    ]
-  },
-  {
-    "metadata-version" : "10.0.0",
-    "tested-versions" : [
-      "10.0.0"
-    ],
-    "allowed-packages" : [
-      "javax.websocket",
-      "org.apache.tomcat.websocket",
-      "jakarta.websocket"
-    ]
-  },
-  {
-    "metadata-version" : "9.0.122",
-    "tested-versions" : [
-      "9.0.122"
-    ],
-    "allowed-packages" : [
-      "javax.websocket",
-      "org.apache.tomcat.websocket"
-    ]
-  },
-  {
     "metadata-version" : "9.0.83",
     "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
     "repository-url" : "https://github.com/apache/tomcat",
@@ -149,5 +47,134 @@
       "javax.websocket",
       "org.apache.tomcat.websocket"
     ]
+  },
+  {
+    "metadata-version" : "9.0.122",
+    "tested-versions" : [
+      "9.0.122"
+    ],
+    "allowed-packages" : [
+      "javax.websocket",
+      "org.apache.tomcat.websocket"
+    ]
+  },
+  {
+    "metadata-version" : "10.0.0",
+    "tested-versions" : [
+      "10.0.0"
+    ],
+    "allowed-packages" : [
+      "javax.websocket",
+      "org.apache.tomcat.websocket",
+      "jakarta.websocket"
+    ]
+  },
+  {
+    "metadata-version" : "10.0.6",
+    "tested-versions" : [
+      "10.0.6"
+    ],
+    "allowed-packages" : [
+      "javax.websocket",
+      "org.apache.tomcat.websocket",
+      "jakarta.websocket"
+    ]
+  },
+  {
+    "metadata-version" : "10.1.0",
+    "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
+    "repository-url" : "https://github.com/apache/tomcat",
+    "test-code-url" : "https://github.com/apache/tomcat/tree/$version$/test/org/apache/tomcat/websocket",
+    "documentation-url" : "https://github.com/apache/tomcat/blob/$version$/webapps/docs/web-socket-howto.xml",
+    "description" : "Tomcat Embed WebSocket provides Apache Tomcat's embeddable implementation of the Jakarta WebSocket API for Tomcat 10.1 applications. It enables WebSocket client and server endpoints, message handling, session management, and Tomcat-specific WebSocket configuration when running Tomcat embedded in a JVM application.",
+    "tested-versions" : [
+      "10.1.0",
+      "10.1.1",
+      "10.1.2",
+      "10.1.4",
+      "10.1.5",
+      "10.1.6",
+      "10.1.7"
+    ],
+    "allowed-packages" : [
+      "javax.websocket",
+      "org.apache.tomcat.websocket",
+      "jakarta.websocket"
+    ]
+  },
+  {
+    "metadata-version" : "10.1.8",
+    "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
+    "repository-url" : "https://github.com/apache/tomcat",
+    "test-code-url" : "https://github.com/apache/tomcat/tree/$version$/test/org/apache/tomcat/websocket",
+    "documentation-url" : "https://github.com/apache/tomcat/blob/$version$/webapps/docs/web-socket-howto.xml",
+    "description" : "Tomcat Embed WebSocket provides Apache Tomcat's embeddable implementation of the Jakarta WebSocket API for Tomcat 10.1 applications. It enables WebSocket client and server endpoints, message handling, session management, and Tomcat-specific WebSocket configuration when running Tomcat embedded in a JVM application.",
+    "tested-versions" : [
+      "10.1.8",
+      "10.1.9",
+      "10.1.10",
+      "10.1.11",
+      "10.1.12",
+      "10.1.13",
+      "10.1.14",
+      "10.1.15",
+      "10.1.16",
+      "10.1.17",
+      "10.1.18",
+      "10.1.19",
+      "10.1.20",
+      "10.1.23",
+      "10.1.24",
+      "10.1.25",
+      "10.1.26",
+      "10.1.28",
+      "10.1.29",
+      "10.1.30",
+      "10.1.31",
+      "10.1.33",
+      "10.1.34",
+      "10.1.35",
+      "10.1.36",
+      "10.1.39",
+      "10.1.40",
+      "10.1.41",
+      "10.1.42",
+      "10.1.43",
+      "10.1.44",
+      "10.1.45",
+      "10.1.46",
+      "10.1.47",
+      "10.1.48",
+      "10.1.49",
+      "10.1.50",
+      "10.1.52",
+      "10.1.53",
+      "10.1.54",
+      "10.1.55",
+      "10.1.56",
+      "10.1.57",
+      "10.1.59"
+    ],
+    "allowed-packages" : [
+      "javax.websocket",
+      "org.apache.tomcat.websocket",
+      "jakarta.websocket"
+    ]
+  },
+  {
+    "latest" : true,
+    "auto-update" : true,
+    "metadata-version" : "11.0.21",
+    "tested-versions" : [
+      "11.0.21"
+    ],
+    "allowed-packages" : [
+      "jakarta.websocket",
+      "org.apache.tomcat.websocket"
+    ],
+    "source-code-url" : "https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/$version$/tomcat-embed-websocket-$version$-sources.jar",
+    "test-code-url" : "https://github.com/apache/tomcat/tree/$version$/test/org/apache/tomcat/websocket",
+    "documentation-url" : "https://github.com/apache/tomcat/blob/$version$/webapps/docs/web-socket-howto.xml",
+    "repository-url" : "https://github.com/apache/tomcat"
   }
 ]

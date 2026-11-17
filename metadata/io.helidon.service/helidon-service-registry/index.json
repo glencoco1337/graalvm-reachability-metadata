@@ -16,6 +16,7 @@
     ],
     "allowed-packages" : [
       "io.helidon.service.registry"
-    ]
+    ],
+    "override": true
   }
 ]

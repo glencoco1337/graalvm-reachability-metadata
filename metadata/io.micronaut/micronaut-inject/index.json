@@ -8,5 +8,15 @@
     "allowed-packages" : [
       "io.micronaut"
     ]
+  },
+  {
+    "metadata-version" : "5.0.0",
+    "tested-versions" : [
+      "5.1.10"
+    ],
+    "allowed-packages" : [
+      "io.micronaut"
+    ],
+    "override" : true
   }
 ]

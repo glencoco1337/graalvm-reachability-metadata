@@ -1,0 +1,42 @@
+{
+  "versions" : [ {
+    "version" : "1.81.0",
+    "dynamicAccess" : {
+      "breakdown" : {
+        "reflection" : {
+          "coverageRatio" : 0.621951,
+          "coveredCalls" : 102,
+          "totalCalls" : 164
+        },
+        "resources" : {
+          "coverageRatio" : 0.666667,
+          "coveredCalls" : 4,
+          "totalCalls" : 6
+        }
+      },
+      "coverageRatio" : 0.623529,
+      "coveredCalls" : 106,
+      "totalCalls" : 170
+    },
+    "libraryCoverage" : {
+      "instruction" : {
+        "covered" : 98810,
+        "missed" : 291247,
+        "ratio" : 0.253322,
+        "total" : 390057
+      },
+      "line" : {
+        "covered" : 19271,
+        "missed" : 63701,
+        "ratio" : 0.232259,
+        "total" : 82972
+      },
+      "method" : {
+        "covered" : 5058,
+        "missed" : 15696,
+        "ratio" : 0.243712,
+        "total" : 20754
+      }
+    }
+  } ]
+}

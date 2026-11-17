@@ -6,6 +6,13 @@ IDs. Each entry below is a snapshot of the ticket's public fields, written by
 `grund fetch graal/GR-<number>` from the repository root; refresh one by
 fetching it again rather than editing it by hand.
 
+## GR-38579: Implement SubstrateThreadMXBean#dumpAllThreads
+
+- Status: Open
+- Resolution: Unresolved
+- Fix versions: none
+- Public links: https://github.com/oracle/graal/issues/4714
+
 ## GR-48702: Resource handling is not correct due to our substitutions
 
 - Status: In Progress
@@ -51,6 +58,13 @@ fetching it again rather than editing it by hand.
 ## GR-80250: Add CI coverage for Gradle builds using SVM libjvm-based java
 
 - Status: Open
+- Resolution: Unresolved
+- Fix versions: none
+- Public links: none
+
+## GR-80256: Native Image retains Netty NetUtil.LOOPBACK_IF network interface during build-time initialization
+
+- Status: In Progress
 - Resolution: Unresolved
 - Fix versions: none
 - Public links: none
@@ -131,3 +145,10 @@ fetching it again rather than editing it by hand.
 - Resolution: Unresolved
 - Fix versions: none
 - Public links: https://github.com/oracle/graal/issues/14812
+
+## GR-81040: \[Native Image\] Proxy.newProxyInstance rejects a class loader that sees the interfaces through delegation, which the JVM accepts
+
+- Status: Open
+- Resolution: Unresolved
+- Fix versions: none
+- Public links: https://github.com/oracle/graal/issues/14849

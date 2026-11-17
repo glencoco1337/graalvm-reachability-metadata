@@ -49,6 +49,7 @@
     ],
     "allowed-packages" : [
       "io.opentelemetry.instrumentation.api"
-    ]
+    ],
+    "override": true
   }
 ]

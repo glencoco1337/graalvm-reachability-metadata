@@ -63,5 +63,70 @@
     "artifacts": {
       "metadata_file": "metadata/org.mybatis/mybatis/3.5.19/reachability-metadata.json"
     }
+  },
+  "library-update-request:2026-11-10": {
+    "timestamp": "2026-11-10T21:59:28+00:00",
+    "library": "org.mybatis:mybatis:3.5.19",
+    "starting_commit": "6e718a6c2fd392795005fc3fa519aa9f82f1f070",
+    "ending_commit": "ee9771f301cefc9c9a5dc47814026bce2046b21c",
+    "strategy_name": "forge-metadata:library-update-request",
+    "agent": "pi",
+    "model": "openai-codex/gpt-6.1-sol",
+    "status": "success",
+    "stats": {
+      "version": "3.5.19",
+      "dynamicAccess": {
+        "breakdown": {
+          "reflection": {
+            "coverageRatio": 0.816901,
+            "coveredCalls": 232,
+            "totalCalls": 284
+          },
+          "resources": {
+            "coverageRatio": 0.928571,
+            "coveredCalls": 13,
+            "totalCalls": 14
+          }
+        },
+        "coverageRatio": 0.822148,
+        "coveredCalls": 245,
+        "totalCalls": 298
+      },
+      "libraryCoverage": {
+        "instruction": {
+          "covered": 47555,
+          "missed": 137223,
+          "ratio": 0.257363,
+          "total": 184778
+        },
+        "line": {
+          "covered": 10528,
+          "missed": 31015,
+          "ratio": 0.253424,
+          "total": 41543
+        },
+        "method": {
+          "covered": 2344,
+          "missed": 5453,
+          "ratio": 0.300628,
+          "total": 7797
+        }
+      }
+    },
+    "metrics": {
+      "input_tokens_used": 993046,
+      "cached_input_tokens_used": 6411682,
+      "output_tokens_used": 29111,
+      "iterations": 20,
+      "cost_usd": 22.5631,
+      "generated_loc": 3271,
+      "tested_library_loc": 10528,
+      "metadata_entries": 259,
+      "test_only_metadata_entries": 315,
+      "code_coverage_percent": 25.34
+    },
+    "artifacts": {
+      "metadata_file": "metadata/org.mybatis/mybatis/3.5.19/reachability-metadata.json"
+    }
   }
 }

@@ -1,0 +1,62 @@
+{
+  "library-new-request:2026-11-10": {
+    "timestamp": "2026-11-10T21:38:31+00:00",
+    "library": "org.springframework.ldap:spring-ldap-core:4.0.3",
+    "starting_commit": "6e718a6c2fd392795005fc3fa519aa9f82f1f070",
+    "ending_commit": "757c4ed2fb4cf03a851298ecdee0e72342f37fcf",
+    "strategy_name": "forge-metadata:library-new-request",
+    "agent": "pi",
+    "model": "openai-codex/gpt-6.1-sol",
+    "status": "success",
+    "stats": {
+      "version": "4.0.3",
+      "dynamicAccess": {
+        "breakdown": {
+          "reflection": {
+            "coverageRatio": 0.972973,
+            "coveredCalls": 36,
+            "totalCalls": 37
+          }
+        },
+        "coverageRatio": 0.972973,
+        "coveredCalls": 36,
+        "totalCalls": 37
+      },
+      "libraryCoverage": {
+        "instruction": {
+          "covered": 5992,
+          "missed": 23558,
+          "ratio": 0.202775,
+          "total": 29550
+        },
+        "line": {
+          "covered": 1600,
+          "missed": 5417,
+          "ratio": 0.228018,
+          "total": 7017
+        },
+        "method": {
+          "covered": 388,
+          "missed": 1549,
+          "ratio": 0.20031,
+          "total": 1937
+        }
+      }
+    },
+    "metrics": {
+      "input_tokens_used": 296305,
+      "cached_input_tokens_used": 1814872,
+      "output_tokens_used": 9411,
+      "iterations": 4,
+      "cost_usd": 6.4465,
+      "generated_loc": 807,
+      "tested_library_loc": 1600,
+      "metadata_entries": 132,
+      "test_only_metadata_entries": 16,
+      "code_coverage_percent": 22.8
+    },
+    "artifacts": {
+      "metadata_file": "metadata/org.springframework.ldap/spring-ldap-core/4.0.3/reachability-metadata.json"
+    }
+  }
+}
