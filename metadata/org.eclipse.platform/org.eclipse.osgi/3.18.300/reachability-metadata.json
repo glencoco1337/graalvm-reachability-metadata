@@ -1,0 +1,227 @@
+{
+  "reflection" : [
+    {
+      "type" : "org.osgi.service.cm.SynchronousConfigurationListener",
+      "allDeclaredMethods" : true,
+      "allPublicConstructors" : true
+    },
+    {
+      "type" : "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
+      "allPublicConstructors" : true
+    },
+    {
+      "type" : "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+      "allPublicConstructors" : true
+    },
+    {
+      "type" : "com.sun.xml.internal.stream.XMLInputFactoryImpl",
+      "allPublicConstructors" : true
+    },
+    {
+      "type" : "java.lang.Boolean",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type" : "java.lang.Object",
+      "allDeclaredMethods" : true
+    },
+    {
+      "type" : "java.lang.System",
+      "allPublicMethods" : true
+    },
+    {
+      "type" : "java.net.URL",
+      "allDeclaredFields" : true
+    },
+    {
+      "type" : "java.net.URLClassLoader",
+      "methods" : [
+        {
+          "name" : "addURL",
+          "parameterTypes" : [
+            "java.net.URL"
+          ]
+        }
+      ]
+    },
+    {
+      "type" : "java.net.URLConnection",
+      "allDeclaredFields" : true
+    },
+    {
+      "type" : "java.util.HashSet",
+      "methods" : [
+        {
+          "name" : "clone",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "javax.xml.parsers.SAXParserFactory"
+    },
+    {
+      "type" : "org.eclipse.osgi.container.ModuleWiring",
+      "fields" : [
+        {
+          "name" : "dynamicMissRef"
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.cds.CDSHookConfigurator",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.connect.ConnectHookConfigurator",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.framework.BundleContextImpl",
+      "allPublicMethods" : true
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.framework.EquinoxBundle$SystemBundle",
+      "allPublicMethods" : true
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.framework.SystemBundleActivator",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.internal.signedcontent.SignedBundleHook",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.launch.EquinoxFactory",
+      "methods" : [
+        {
+          "name" : "<init>",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.eclipse.osgi.service.resolver.BundleDescription"
+    },
+    {
+      "type" : "org.osgi.service.cm.Configuration",
+      "methods" : [
+        {
+          "name" : "getFactoryPid",
+          "parameterTypes" : [ ]
+        },
+        {
+          "name" : "getPid",
+          "parameterTypes" : [ ]
+        },
+        {
+          "name" : "getProperties",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : "org.osgi.service.cm.ConfigurationAdmin",
+      "methods" : [
+        {
+          "name" : "getConfiguration",
+          "parameterTypes" : [
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name" : "listConfigurations",
+          "parameterTypes" : [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type" : "org.osgi.service.cm.ConfigurationEvent",
+      "methods" : [
+        {
+          "name" : "getFactoryPid",
+          "parameterTypes" : [ ]
+        },
+        {
+          "name" : "getPid",
+          "parameterTypes" : [ ]
+        },
+        {
+          "name" : "getReference",
+          "parameterTypes" : [ ]
+        },
+        {
+          "name" : "getType",
+          "parameterTypes" : [ ]
+        }
+      ]
+    },
+    {
+      "type" : {
+        "proxy" : [
+          "org.osgi.service.cm.SynchronousConfigurationListener"
+        ]
+      }
+    }
+  ],
+  "resources" : [
+    {
+      "glob" : "META-INF/services/org.osgi.framework.connect.ConnectFrameworkFactory"
+    },
+    {
+      "glob" : "META-INF/services/org.osgi.framework.launch.FrameworkFactory"
+    },
+    {
+      "glob" : "hookconfigurators.properties"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/framework/osname.aliases"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/framework/processor.aliases"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/messages/ExternalMessages.properties"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/permadmin/implied.permissions"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/signedcontent/SignedContentMessages.properties"
+    },
+    {
+      "glob" : "org/eclipse/osgi/internal/url/SetAccessible.bytes"
+    }
+  ]
+}

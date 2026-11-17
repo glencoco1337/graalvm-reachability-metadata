@@ -17,6 +17,7 @@
     ],
     "allowed-packages" : [
       "dev.equo"
-    ]
+    ],
+    "override": true
   }
 ]
